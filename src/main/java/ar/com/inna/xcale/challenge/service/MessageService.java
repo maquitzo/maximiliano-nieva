@@ -10,6 +10,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 @Service
 
 public class MessageService {
@@ -24,8 +28,22 @@ public class MessageService {
 
     public void SendMessage(Room room, Contact contact, String text) throws Exception {
 
-        log.info("validate relation room -> contact");
-        if (!iRoomRepository.findById(room.getId()).isPresent())
+        log.info("validate room");
+        Optional<Room> room_filter = iRoomRepository
+                .findById(room.getId())
+                .stream()
+                .findFirst();
+
+        if (!room_filter.isPresent())
+            throw new Exception("Room is not available");
+
+        log.info("validate relation with contact");
+        Optional<Contact> contact_filter = room_filter.get().getContact()
+                .stream()
+                .filter(con->con.getId().equals(contact.getId()))
+                .findFirst();
+
+        if (!contact_filter.isPresent())
             throw new Exception("Contact doesn't belong to this group");
 
         log.info("persistence");
