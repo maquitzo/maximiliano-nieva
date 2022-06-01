@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Service
-
 public class MessageService {
 
     private static final Logger log = LoggerFactory.getLogger(MessageService.class);

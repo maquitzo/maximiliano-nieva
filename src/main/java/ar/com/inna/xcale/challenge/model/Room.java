@@ -25,7 +25,8 @@ public class Room {
         this.name = name;
     }
 
-    @OneToMany(fetch = FetchType.EAGER)
+//    @OneToMany()
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private List<Contact> contact;
 
 }

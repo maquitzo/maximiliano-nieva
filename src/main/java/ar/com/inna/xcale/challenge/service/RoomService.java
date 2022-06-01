@@ -27,6 +27,7 @@ public class RoomService {
 
         Room room = new Room(name);
         room.setContact(roomContacts);
+
         return this.iRoomRepository.save(room);
 
     }
