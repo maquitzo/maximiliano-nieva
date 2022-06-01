@@ -24,4 +24,7 @@ public class Contact  {
         this.setPhoneNumber(phoneNumber);
     }
 
+    public void ReceivedMessage(String room, String producer, String message) {
+        System.out.println(String.format("[ Alert for %s at %s ] - %s says %s", this.getPhoneNumber(), room, producer, message));
+    }
 }

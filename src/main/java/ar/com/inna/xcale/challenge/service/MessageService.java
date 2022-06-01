@@ -10,9 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 
@@ -28,33 +26,39 @@ public class MessageService {
 
     public void SendMessage(Room room, Contact contact, String text) throws Exception {
 
-        log.info("validate room");
-        Optional<Room> room_filter = iRoomRepository
+        log.info("validate : existence room");
+        Optional<Room> roomValidation = iRoomRepository
                 .findById(room.getId())
                 .stream()
                 .findFirst();
 
-        if (!room_filter.isPresent())
+        if (!roomValidation.isPresent())
             throw new Exception("Room is not available");
 
-        log.info("validate relation with contact");
-        Optional<Contact> contact_filter = room_filter.get().getContact()
+        log.info("validate : relation with contact");
+        Optional<Contact> contactValidation = roomValidation
                 .stream()
-                .filter(con->con.getId().equals(contact.getId()))
+                .flatMap(con -> con.getContact().stream())
+                .filter(con -> con.getId().equals(contact.getId()))
                 .findFirst();
 
-        if (!contact_filter.isPresent())
+        if (!contactValidation.isPresent())
             throw new Exception("Contact doesn't belong to this group");
 
-        log.info("persistence");
+        log.info("transaction : persistence");
         Message message = new Message();
         message.setFrom(contact);
         message.setRoom(room);
         message.setMessage(text);
         iMessageRepository.save(message);
 
-        log.info("console output");
-        System.out.println(String.format("[%s-%s] ha enviado : %s", room.getName(), contact.getPhoneNumber(), text));
+        log.info("alert the contacts except me");
+        roomValidation.stream()
+                .flatMap(roomContacts -> roomContacts.getContact().stream())
+                .filter(me -> !me.getId().equals(contact.getId()))
+                .forEach(contactBroadCast -> contactBroadCast.ReceivedMessage(room.getName(),contact.getPhoneNumber(), text));
+
     }
+
 
 }
